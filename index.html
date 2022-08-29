@@ -1,0 +1,393 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: bold;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: uppercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Oisharya Dhar</h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Assignment 5: Face detection with a sliding window</h2>
+
+<div style="float: right; padding: 20px">
+<img src="results/2.png" />
+<p style="font-size: 19px; text-align: center;">Face Detection</p>
+</div>
+
+<p align='justify'>This project aims to classify all the faces from a random image.  
+	With the help of sliding window patches in images as object or non-object is determine. The assignment is dived into four parts:</p>
+
+<ol>
+<li>Getting Positive Features</li>
+<li>Getting Random Negative Features</li>
+<li>Train SVM Classifier</li>
+<li>Mining Hard Negetive Features</li>
+<li>Sliding Window Detector</li>
+</ol>
+<h1 align='justify'>Getting Positive Features </h1>
+<p align='justify'>Here, as this assignment is based on detecting faces, faces are considered as positive sample.<br>
+	For training every face image from the positive file folder is taken. Firstly, feats array is declared which is a N*D shape matrix. 
+	A nested loop is run through the positive file folder to get all the images. Using <b>load_image_gray</b> function each image is then taken from the folder. 
+	Each image is fed to hog descriptor function to take all the gradient value of the image. Finally, all the gradient value of all images is taken to feature matrix. Using the gradient values, the model is trained to identify faces in any image.
+</p>
+<div style="float: right; padding: 20px; width: 100%;">
+	<img src="results/pos.JPG" width="50%" height="auto" align='center'/>
+	<p style="font-size: 18px">Figure1: Flow chart of get_positive_feature function</p>
+</div>
+
+<p align='justify'>For extracting Hog feature the traditional hog feature function is used.</p>
+
+<h1 align='justify'>Getting Random Negative Features </h1>
+<p align='justify'>Same as before the gradient of background of an image is taken in this step. Firstly, all the imaged is loaded through image_load_gray function. 
+	As in these images there is also face available, we will take the gradient of the images using different size of the image to be more precise.</p>
+<div style="float: right; padding: 20px; width: 100%;">
+	<img src="results/hard_neg.JPG" width="50%" height="auto" />
+	<p style="font-size: 18px">Figure2: Flow chart of getting random negetive feature</p>
+</div>
+<p align='justify'>The dimension of resized image is chosen randomly. Here, without taking whole image array, an array is being made by image dimension. 
+	A nested for loop is being run using 2D image dimension. Using the shape and window size an 2D array is generated for each image.
+	Then from the 2D array hog features are extracted.
+</p>
+<h1 align='justify'>Train SVM Classifier</h1>
+<p align='justify'>To pass through SVM classifier two attributes X_train and y_train are generated from positive features and negative features. 
+	Here, C is the regulation parameter and must be positive. The strength of the SVM regulation is also inversely proportional to C. The hog images are shown in bellow:
+</p>
+<div>
+	<img src="results/hog_face.png" />
+	<p style= "text-align: center;" font-size: 18px>Figure3: Hog Feture1</p>
+	<img src="results/hog_f2.png" />
+	<p style= "text-align: center;" font-size: 18px>Figure4: Hog Feature2</p>
+</div>
+
+<h1 align='justify'>Mining Hard Negetive Features</h1>
+<p align='justify'>This is similar to get_random_negative_features function. 
+	But here the trained SVM function is used to mine the gradient of negative features from the feature that are only generated using hog features.
+</p>
+<h1 align='justify'>Sliding Window Detector</h1>
+<p align='justify'>This process started with assigning the threshold value. Here, by doing try and error the threshold value is kept as lowest as possible.<br>
+	For this, a list of the scale factor is set to resize the image in a different size. After resizing the hog features are extracted from the image. For this, a list of the scale factor is set to resize the image in a different size. After resizing the hog features are extracted from the image. A nested for loop is then run using the hog features dimension and value. Doing so a feature window is generated for striding. 
+	The confidence rate of all window features is then reshaped and compared to the threshold for generating variables for further processing
+<br> The default values of the cur_	xmin to cur_boxes need to be chnage, because with this default value it gives very poor peresion rate.
+</p>
+<p align='justify'>The given image table is the table of default variable and new assigning variables</p>
+<table border=1><tr>
+	<th>Class</th>
+	<th>Default Variable </th>
+	<th>New Variable</th>
+</tr>
+<tr>
+	
+		<th>Random negetive feature</th>
+	<td><img src="results/defaul_var.png" width="100%"/><br><img src="results/default_var_viola.png" width="100%"/></td>
+	<td><img src="results/random_neg.png"  width="100%"/><br><img src="results/random_neg.png"  width="100%"/>
+	</td>
+</tr>
+
+<tr>
+	<th>Hard negetive feature</th>
+	<td><img src="results/defaul_hard.png" width="100%"/><br><img src="results/default_var_viola.png" width="100%"/></td>
+	<td><img src="results/hard_neg1.png"  width="100%"/><br><img src="results/hard_neg2.png"  width="100%"/>
+	</td>
+</table>
+	
+<h1>Results with different C</h1>
+<p align='justify'>The code had been run using differnt value of C in svm for both multiclass learing and hard negetive mining. </p>
+<style>
+	.td_width td{
+		width: 25%;
+	}
+	.td_width img{
+		width: 100%;
+	}
+</style>
+<table border=1 class="td_width">
+	<tr>
+		<th>Class</th>
+		<th>C</th>
+		<th>Accuracy</th>
+		<th>True Positive</th>
+		<th>False Positive</th>
+		<th>True Negetive</th>
+		<th>False Negetive</th>
+		<th>Image(Multi)</th>
+		<th>Image(Hard Negetive)</th>
+	</tr>
+	<tr><th>Multi Class<br>Hard Negetive Mine</th>
+		<th>0.001</th>
+		<th>99.531%<br>99.527%</th>
+		<th>99.166%<br>99.166%</th>
+		<th>0.092<br>0.100</th>
+		<th>99.908<br>99.900</th>
+		<th>0.834<br>0.834</th>
+		<td>
+			<img src="results/c1=0.001.png"  />
+		</td>
+		<td>
+			<img src="results/c1=0.001.h" />
+		</td>
+	</tr>
+	<tr><th>Multi Class<br>Hard Negetive Mine</th>
+		<th>0.01</th>
+		<th>99.784%<br>99.781%</th>
+		<th>99.620%<br>99.620%</th>
+		<th>0.046<br>0.0.054</th>
+		<th>99.954<br>99.195</th>
+		<th>0.380<br>0.380</th>
+		<td>
+			<img src="results/c=.01.png"  />
+		</td>
+		<td>
+			<img src="results/c=.01h.png" />
+		</td>
+	</tr>
+	</tr>
+	<tr><th>Multi Class<br>Hard Negetive Mine</th>
+		<th>0.05</th>
+		<th>99.883%<br>99.789%</th>
+		<th>99.806%<br>99.620%</th>
+		<th>0.038<br>0.0.054</th>
+		<th>99.962<br>99.946</th>
+		<th>0.194<br>0.380</th>
+		<td>
+			<img src="results/c=.05.png"  />
+		</td>
+		<td>
+			<img src="results/c=.05h.png" />
+		</td>
+	</tr>
+	<tr><th>Multi Class<br>Hard Negetive Mine</th>
+		<th>10</th>
+		<th>100%<br>100%</th>
+		<th>100%<br>100%</th>
+		<th>0.0<br>0.0.0</th>
+		<th>100<br>100</th>
+		<th>0.0<br>0.0</th>
+		<td>
+			<img src="results/c=10.png"  />
+		</td>
+		<td>
+			<img src="results/c=10h.png" />
+		</td>
+	</tr>
+	<tr><th>Multi Class<br>Hard Negetive Mine</th>
+		<th>100</th>
+		<th>99.996%<br>100%</th>
+		<th>99.993%<br>100%</th>
+		<th> 0.000%<br>0.0</th>
+		<th>100.000%<br>100%</th>
+		<th>0.007%<br>0.0</th>
+		<td>
+			<img src="results/c0100.png"  />
+		</td>
+		<td>
+			<img src="results/c=100h.png" />
+		</td>
+	</tr>
+</table>
+<h1>Precesion</h1>
+<p align='center'>The  two graphs represent the precesion of sliding window using random negetive feature and hard negetive feature. </p>
+<div>
+	<img src="results/random_neg.png" />
+	<p style= "text-align: center;" font-size: 20px>Figure5: Precesion with random negetive feature</p>
+	<img src="results/viola_random.png" />
+	<p style= "text-align: center;" font-size: 20px>Figure6: Mesured in Viola-Jones</p>
+	<img src="results/hard_neg1.png" />
+	<p style= "text-align: center;" font-size: 20px>Figure7: Precesion with Hard Negetive Mining</p>
+	<img src="results/viola_hard.png" />
+	<p style= "text-align: center;" font-size: 20px>Figure8: Mesured in Viola-Jones</p>
+</div>
+<p align='justify'>Here,we can see both methods have similar accuracy but random negetive feature gives little bit more accuracy.</p>
+
+
+<h1>Results in a table</h1>
+
+<table border=1>
+<tr>
+<td>
+<img src="results/default.png" width="24%"/>
+<img src="results/default2.png"  width="24%"/>
+<img src="results/default3.png" width="24%"/>
+
+</td>
+</tr>
+<tr>
+<td>
+<img src="results/default4.png" width="24%"/>
+<img src="results/default5.png"  width="24%"/>
+<img src="results/default6.png" width="24%"/>
+
+</td>
+</tr>
+
+</table>
+<h1>Extra Scene Results in a table</h1>
+<table border=1>
+	<tr>
+	<td>
+	<img src="results/extra1.png" width="24%"/>
+	<img src="results/extra2.png"  width="24%"/>
+	<img src="results/extra3.png" width="24%"/>
+	
+	</td>
+
+	
+</table>
+<h1>Extra Credit</h1>
+<h3>Hog Descriptor</h3>
+<p align>I have created my own hog feature function but it does not work on hard negetive because of the feature dimention that is created by my function.
+	The bellow comparsion table shows the difference between my hog descritpr function and the traditional one.</p>
+	<table border=1><tr>
+		<th>My Hog Detector</th>
+		<th>Traditional Hog Descriptor</th>
+	</tr>
+	<tr>
+		<td>
+		<img src="results/percentage_myhog.png" width="100%"/></td>
+		<td><img src="results/c=.05.png"  width="100%"/>
+		</td>
+	</tr>
+	
+	<tr>
+		<td><img src="results/myhog_accu.JPG"  width="100%"/>
+		</td>
+		<td>
+		<img src="results/main.JPG" width="100%"/>
+		</td>
+		
+</table>
+</body>
+</html>
